@@ -2,9 +2,9 @@ from typing import Optional, Sequence
 import numpy as np
 import torch
 
-from cs285.networks.policies import MLPPolicyPG
-from cs285.networks.critics import ValueCritic
-from cs285.infrastructure import pytorch_util as ptu
+from networks.policies import MLPPolicyPG
+# from networks.critics import ValueCritic
+from infrastructure import pytorch_util as ptu
 from torch import nn
 
 
@@ -33,11 +33,11 @@ class PGAgent(nn.Module):
         )
 
         # create the critic (baseline) network, if needed
-        if use_baseline:
-            self.critic = ValueCritic(
-                ob_dim, n_layers, layer_size, baseline_learning_rate
-            )
-            self.baseline_gradient_steps = baseline_gradient_steps
+        # if use_baseline:
+        #     self.critic = ValueCritic(
+        #         ob_dim, n_layers, layer_size, baseline_learning_rate
+        #     )
+        #     self.baseline_gradient_steps = baseline_gradient_steps
         else:
             self.critic = None
 

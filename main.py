@@ -34,7 +34,8 @@ def main():
     #     env.close()
     two_vertiport_system = Env()
 
-
+    # ob_dim = two_vertiport_system.observation_space.shape[0]
+    # print(ob_dim)
 
     for i in range(5):
         action = two_vertiport_system.compute_action()
