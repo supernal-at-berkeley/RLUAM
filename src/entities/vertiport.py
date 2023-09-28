@@ -7,6 +7,11 @@ class vertiport:
         self.idle_aircraft = [aircraft(location, aircarft_initial_soc, flight_time, time_step) for i in range(initial_fleet_size)]  # List to store Aircraft instances
         self.charging_aircraft = []
         self.in_flight_aircraft = []
+        self.queue = 0 
+
+
+    def update_pax_in_queue(self, pax_num):
+        self.queue += pax_num    
 
     def collect_arriving_aircraft(self, origin_vertiport):
         if self.location == 0:
@@ -44,6 +49,10 @@ class vertiport:
 
             if idx == (num_aircraft_dispatch-1):
                 break
+        
+        self.queue -= num_aircraft_dispatch*4
+        if self.queue < 0:
+            self.queue = 0
         
     
     def commit_aircraft_to_charging(self, num_aircraft_charging):
