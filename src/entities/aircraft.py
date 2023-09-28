@@ -31,11 +31,10 @@ class aircraft:
             Update the aircraft soc
         """
         if (self.location == 1) | (self.location == 0):
-            soc_gained = (M+S*(self.soc*100-20)) * (self.time_step/60)
+            soc_gained = (M+S*(self.soc-0.2)*100) * (self.time_step/60) /160
             self.soc += soc_gained
+            if self.soc > 1:
+                self.soc = 1
             self.direction = None
         else:
             raise AircraftPositionError("Must charge airports at vertiports")
-        
-    
-        

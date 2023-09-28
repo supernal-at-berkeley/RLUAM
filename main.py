@@ -2,6 +2,11 @@ import gym
 from src.env import *
 from utils.logger import logger
 
+
+
+
+
+
 def main():
     # Create the CartPole environment
     # env = gym.make('CartPole-v1')
@@ -35,6 +40,7 @@ def main():
         action = two_vertiport_system.compute_action()
         two_vertiport_system.step(action)
         logger(two_vertiport_system)
+
 
 
 
