@@ -10,3 +10,6 @@ def logger(Env):
     for aircraft in Env.vertiports[1].in_flight_aircraft:
         soc_10.append(aircraft.soc)
     print(soc_10)
+
+
+

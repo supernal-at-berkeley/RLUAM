@@ -11,6 +11,8 @@ initial_fleet_size = np.array([8,8])
 aircraft_initial_soc = 1
 time_step = 1
 pax_arrival_fn = 'data/' + 'full_year_schedule_0926'
+pax_waiting_time_beta = 100
+charging_beta = 50
 
 class Env(gym.Env):
     def __init__(self, 
@@ -18,7 +20,9 @@ class Env(gym.Env):
                  initial_fleet_size=initial_fleet_size,
                  aircraft_initial_soc=aircraft_initial_soc, 
                  time_step=time_step,
-                 pax_arrival_fn = pax_arrival_fn):
+                 pax_arrival_fn=pax_arrival_fn,
+                 pax_waiting_time_beta=pax_waiting_time_beta,
+                 charging_beta=charging_beta):
         
         self.aircraft_initial_soc = aircraft_initial_soc
         self.initial_fleet_size = initial_fleet_size
@@ -27,6 +31,8 @@ class Env(gym.Env):
         self.counter = 0
         self.vertiports = [vertiport(self.aircraft_initial_soc, self.initial_fleet_size[0], self.flight_time, 0, self.time_step),
                            vertiport(self.aircraft_initial_soc, self.initial_fleet_size[1], self.flight_time, 1, self.time_step)]
+        self.pax_waiting_time_beta = pax_waiting_time_beta
+        self.charging_beta = charging_beta
     
 
         self.event_time_counter = 0
@@ -130,9 +136,14 @@ class Env(gym.Env):
         dtla_vertiport_idling = np.array(dtla_vertiport_idling)
         dtla_vertiport_idling = np.concatenate([dtla_vertiport_idling, np.repeat(0, self.initial_fleet_size.sum()-len(dtla_vertiport_idling))])
 
-        return {'lax_idle_aircraft':lax_vertiport_idling,
+        queue_length = self.vertiports[0].queue + self.vertiports[1].queue
+        charging_time = action[0][1] + action[1][1]
+        reward = -(self.charging_beta*charging_time+self.pax_waiting_time_beta*queue_length)
+
+        return ({'lax_idle_aircraft':lax_vertiport_idling,
                  'dtla_idle_aircraft':dtla_vertiport_idling,
                  'lax_queue':self.vertiports[0].queue,
-                 'dtla_queue':self.vertiports[1].queue}
+                 'dtla_queue':self.vertiports[1].queue},
+                 reward)
           
 
