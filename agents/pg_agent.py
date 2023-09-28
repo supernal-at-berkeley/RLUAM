@@ -38,8 +38,8 @@ class PGAgent(nn.Module):
         #         ob_dim, n_layers, layer_size, baseline_learning_rate
         #     )
         #     self.baseline_gradient_steps = baseline_gradient_steps
-        else:
-            self.critic = None
+        # else:
+        self.critic = None
 
         # other agent parameters
         self.gamma = gamma

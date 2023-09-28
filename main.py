@@ -1,7 +1,7 @@
 import gym
 from src.env import *
 from utils.logger import logger
-
+from agents.pg_agent import PGAgent
 
 
 
@@ -34,8 +34,14 @@ def main():
     #     env.close()
     two_vertiport_system = Env()
 
-    # ob_dim = two_vertiport_system.observation_space.shape[0]
-    # print(ob_dim)
+    ob_dim = two_vertiport_system.ob_dim
+    ac_dim = two_vertiport_system.ac_dim
+
+    # agent = PGAgent(
+    #
+    # )
+
+
 
     for i in range(5):
         action = two_vertiport_system.compute_action()

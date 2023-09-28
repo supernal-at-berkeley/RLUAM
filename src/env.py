@@ -33,6 +33,8 @@ class Env(gym.Env):
                            vertiport(self.aircraft_initial_soc, self.initial_fleet_size[1], self.flight_time, 1, self.time_step)]
         self.pax_waiting_time_beta = pax_waiting_time_beta
         self.charging_beta = charging_beta
+        self.ob_dim = 36
+        self.ac_dim = 4
     
 
         self.event_time_counter = 0
