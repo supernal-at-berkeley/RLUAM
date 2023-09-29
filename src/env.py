@@ -33,6 +33,8 @@ class Env(gym.Env):
                            vertiport(self.aircraft_initial_soc, self.initial_fleet_size[1], self.flight_time, 1, self.time_step)]
         self.pax_waiting_time_beta = pax_waiting_time_beta
         self.charging_beta = charging_beta
+        self.ob_dim = 36
+        self.ac_dim = 4
     
 
         self.event_time_counter = 0
@@ -71,6 +73,7 @@ class Env(gym.Env):
         self.vertiports = [vertiport(self.aircraft_initial_soc, self.initial_fleet_size[0], self.flight_time, 0, self.time_step),
                            vertiport(self.aircraft_initial_soc, self.initial_fleet_size[1], self.flight_time, 1, self.time_step)]
         self.lax_dtla_arrival, self.lax_dtla_arrival = self.__pax_arrival_realization__(self.lax_dtla_rate, self.dtla_lax_rate)
+        self.event_time_counter = 0
 
     def compute_action(self):
         num_idle_vertiport_0 = len(self.vertiports[0].idle_aircraft)
