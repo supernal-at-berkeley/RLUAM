@@ -38,44 +38,45 @@ def run_training_loop(args):
 
     total_envsteps = 0
     start_time = time.time()
+    max_ep_len = args.ep_len or 1000
 
-    # for itr in range(args.n_iter):
-    #     print(f"\n********** Iteration {itr} ************")
-    #     # TODO: sample `args.batch_size` transitions using utils.sample_trajectories
-    #     # make sure to use `max_ep_len`
-    #     trajs, envsteps_this_batch = utils.sample_trajectories(env, agent.actor, args.batch_size, max_ep_len)  # TODO
-    #     total_envsteps += envsteps_this_batch
-    #
-    #     # trajs should be a list of dictionaries of NumPy arrays, where each dictionary corresponds to a trajectory.
-    #     # this line converts this into a single dictionary of lists of NumPy arrays.
-    #     trajs_dict = {k: [traj[k] for traj in trajs] for k in trajs[0]}
-    #
-    #     # TODO: train the agent using the sampled trajectories and the agent's update function
-    #     train_info: dict = agent.update(trajs_dict['observation'],trajs_dict['action'], trajs_dict['reward'],
-    #                                     trajs_dict['terminal'])
-    #
-    #     if itr % args.scalar_log_freq == 0:
-    #         # save eval metrics
-    #         print("\nCollecting data for eval...")
-    #         eval_trajs, eval_envsteps_this_batch = utils.sample_trajectories(
-    #             env, agent.actor, args.eval_batch_size, max_ep_len
-    #         )
-    #
-    #         logs = utils.compute_metrics(trajs, eval_trajs)
-    #         # compute additional metrics
-    #         logs.update(train_info)
-    #         logs["Train_EnvstepsSoFar"] = total_envsteps
-    #         logs["TimeSinceStart"] = time.time() - start_time
-    #         if itr == 0:
-    #             logs["Initial_DataCollection_AverageReturn"] = logs[
-    #                 "Train_AverageReturn"
-    #             ]
-    #
-    #         # perform the logging
-    #         for key, value in logs.items():
-    #             print("{} : {}".format(key, value))
-    #             logger.log_scalar(value, key, itr)
-    #         print("Done logging...\n\n")
+    for itr in range(args.n_iter):
+        print(f"\n********** Iteration {itr} ************")
+        # TODO: sample `args.batch_size` transitions using utils.sample_trajectories
+        # make sure to use `max_ep_len`
+        trajs, envsteps_this_batch = utils.sample_trajectories(two_vertiport_system, agent.actor, args.batch_size, max_ep_len)  # TODO
+        total_envsteps += envsteps_this_batch
+
+        # trajs should be a list of dictionaries of NumPy arrays, where each dictionary corresponds to a trajectory.
+        # this line converts this into a single dictionary of lists of NumPy arrays.
+        trajs_dict = {k: [traj[k] for traj in trajs] for k in trajs[0]}
+
+        # TODO: train the agent using the sampled trajectories and the agent's update function
+        train_info: dict = agent.update(trajs_dict['observation'],trajs_dict['action'], trajs_dict['reward'],
+                                        trajs_dict['terminal'])
+
+        if itr % args.scalar_log_freq == 0:
+            # save eval metrics
+            print("\nCollecting data for eval...")
+            eval_trajs, eval_envsteps_this_batch = utils.sample_trajectories(
+                two_vertiport_system, agent.actor, args.eval_batch_size, max_ep_len
+            )
+
+            logs = utils.compute_metrics(trajs, eval_trajs)
+            # compute additional metrics
+            logs.update(train_info)
+            logs["Train_EnvstepsSoFar"] = total_envsteps
+            logs["TimeSinceStart"] = time.time() - start_time
+            if itr == 0:
+                logs["Initial_DataCollection_AverageReturn"] = logs[
+                    "Train_AverageReturn"
+                ]
+
+            # perform the logging
+            for key, value in logs.items():
+                print("{} : {}".format(key, value))
+                logger.log_scalar(value, key, itr)
+            print("Done logging...\n\n")
 
 
 def main():
@@ -138,7 +139,7 @@ def main():
     parser.add_argument("--action_noise_std", type=float, default=0)
 
     args = parser.parse_args()
-    run_training_loop(args)
+
 
     two_vertiport_system = Env()
 
@@ -146,6 +147,8 @@ def main():
         action = two_vertiport_system.compute_action()
         two_vertiport_system.step(action)
         logger(two_vertiport_system)
+
+    run_training_loop(args)
 
 
 
