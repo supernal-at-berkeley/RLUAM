@@ -87,7 +87,7 @@ class Env(gym.Env):
         dispatch_at_vertiport_1 = random.randint(0, num_idle_vertiport_1)
         charge_at_vertiport_1 = random.randint(0, num_idle_vertiport_1-dispatch_at_vertiport_1)
 
-        return ((dispatch_at_vertiport_0, charge_at_vertiport_0), (dispatch_at_vertiport_1, charge_at_vertiport_1))
+        return np.array([dispatch_at_vertiport_0, charge_at_vertiport_0, dispatch_at_vertiport_1, charge_at_vertiport_1])
     
     def step(self, action):
         """
@@ -122,11 +122,11 @@ class Env(gym.Env):
         self.vertiports[0].sort_idle_aircraft()
         self.vertiports[1].sort_idle_aircraft()
 
-        self.vertiports[0].dispatch_aircraft_for_flight(action[0][0])
-        self.vertiports[1].dispatch_aircraft_for_flight(action[1][0])
+        self.vertiports[0].dispatch_aircraft_for_flight(action[0])
+        self.vertiports[1].dispatch_aircraft_for_flight(action[1])
 
-        self.vertiports[0].commit_aircraft_to_charging(action[0][1])
-        self.vertiports[1].commit_aircraft_to_charging(action[1][1])
+        self.vertiports[0].commit_aircraft_to_charging(action[2])
+        self.vertiports[1].commit_aircraft_to_charging(action[3])
 
 
         lax_vertiport_idling = []
@@ -142,13 +142,13 @@ class Env(gym.Env):
         dtla_vertiport_idling = np.concatenate([dtla_vertiport_idling, np.repeat(0, self.initial_fleet_size.sum()-len(dtla_vertiport_idling))])
 
         queue_length = self.vertiports[0].queue + self.vertiports[1].queue
-        charging_time = action[0][1] + action[1][1]
+        charging_time = action[0] + action[2]
         reward = -(self.charging_beta*charging_time+self.pax_waiting_time_beta*queue_length)
 
-        return ({'lax_idle_aircraft':lax_vertiport_idling,
-                 'dtla_idle_aircraft':dtla_vertiport_idling,
-                 'lax_queue':self.vertiports[0].queue,
-                 'dtla_queue':self.vertiports[1].queue},
-                 reward)
+        # Observation is of dimension 34
+        # 16 for the idle aircraft soc, 16 for the idle aircraft soc at the other vertiport, 1 for queue length resepectively
+        ob = np.concatenate([lax_vertiport_idling, dtla_vertiport_idling, np.array([self.vertiports[0].queue]), np.array([self.vertiports[1].queue])])
+        
+        return ob, reward
           
 
