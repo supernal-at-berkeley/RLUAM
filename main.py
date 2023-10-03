@@ -10,9 +10,40 @@ import torch
 from infrastructure import pytorch_util as ptu
 from infrastructure import utils
 from infrastructure.action_noise_wrapper import ActionNoiseWrapper
+import matplotlib.pyplot as plt
 
 
+def plot_losses(itr_list, loss_data, title="Loss vs Iterations"):
+    plt.figure(figsize=(10, 6))
 
+    for name, losses in loss_data.items():
+        plt.plot(itr_list, losses, label=name)
+
+    plt.xlabel("Iterations")
+    plt.ylabel("Loss")
+    plt.title(title)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(title + ".png")
+    plt.show()
+
+def plot_rewards(itr_list, reward_data, title="Reward vs Number of environment steps"):
+    plt.figure(figsize=(10, 6))
+
+    for name, rewards in reward_data.items():
+        avg_reward_list, max_return_list, min_return_list = rewards
+        plt.plot(itr_list, avg_reward_list, label=f"Average Reward ({name})")
+        plt.fill_between(itr_list, max_return_list, min_return_list, alpha=0.2)
+
+    plt.xlabel("Number of environment steps")
+    plt.ylabel("Average Reward")
+    plt.title(title)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(title + ".png")
+    plt.show()
 
 def run_training_loop(args):
     two_vertiport_system = Env()
@@ -39,6 +70,13 @@ def run_training_loop(args):
     total_envsteps = 0
     start_time = time.time()
     max_ep_len = args.ep_len or 1000
+
+    avg_reward_list = []
+    max_return_list = []
+    min_return_list = []
+    std_return_list = []
+    itr_list = []
+    actor_losses_list = []
 
     for itr in range(args.n_iter):
         print(f"\n********** Iteration {itr} ************")
@@ -71,12 +109,19 @@ def run_training_loop(args):
                 ]
             for key, value in logs.items():
                 print(f"{key}: {value}")
+            avg_reward_list.append(logs["Eval_AverageReturn"])
+            max_return_list.append(logs["Eval_MaxReturn"])
+            min_return_list.append(logs["Eval_MinReturn"])
+            std_return_list.append(logs["Eval_StdReturn"])
+            itr_list.append(logs["Train_EnvstepsSoFar"])
 
-            # # perform the logging
-            # for key, value in logs.items():
-            #     print("{} : {}".format(key, value))
-            #     logger.log_scalar(value, key, itr)
-            # print("Done logging...\n\n")
+    print("Done logging...\n\n")
+    # # perform the logging
+    # for key, value in logs.items():
+    #     print("{} : {}".format(key, value))
+    #     logger.log_scalar(value, key, itr)
+    # print("Done logging...\n\n")
+    return itr_list, avg_reward_list, max_return_list, min_return_list, actor_losses_list
 
 
 def main():
@@ -147,9 +192,10 @@ def main():
     #     action = two_vertiport_system.compute_action()
     #     two_vertiport_system.step(action)
     #     logger(two_vertiport_system)
-
-    run_training_loop(args)
-
+    reward_data = {}
+    itr, avg, max_r, min_r, actor_losses = run_training_loop(args)
+    reward_data['UAM'] = (avg, max_r, min_r)
+    plot_rewards(itr, reward_data, title="Reward vs Number of environment steps for UAM RL")
 
 
 
