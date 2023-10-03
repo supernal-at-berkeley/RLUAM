@@ -74,6 +74,8 @@ class PGAgent(nn.Module):
         obs_final = obs[0]
 
         for idx in range(1,len(obs)):
+            # obs_final = np.array(obs_final, dtype=np.float32)
+            # print(obs_final.shape, obs[idx].shape)
             obs_final = np.append(obs_final, obs[idx], axis=0)
         # step 2: calculate advantages from Q values
         advantages: np.ndarray = self._estimate_advantage(obs_final, rewards, q_values, terminals)

@@ -71,12 +71,14 @@ def run_training_loop(args):
                 logs["Initial_DataCollection_AverageReturn"] = logs[
                     "Train_AverageReturn"
                 ]
-
-            # perform the logging
             for key, value in logs.items():
-                print("{} : {}".format(key, value))
-                logger.log_scalar(value, key, itr)
-            print("Done logging...\n\n")
+                print(f"{key}: {value}")
+
+            # # perform the logging
+            # for key, value in logs.items():
+            #     print("{} : {}".format(key, value))
+            #     logger.log_scalar(value, key, itr)
+            # print("Done logging...\n\n")
 
 
 def main():
@@ -143,10 +145,10 @@ def main():
 
     two_vertiport_system = Env()
 
-    for i in range(5):
-        action = two_vertiport_system.compute_action()
-        two_vertiport_system.step(action)
-        logger(two_vertiport_system)
+    # for i in range(5):
+    #     action = two_vertiport_system.compute_action()
+    #     two_vertiport_system.step(action)
+    #     logger(two_vertiport_system)
 
     run_training_loop(args)
 

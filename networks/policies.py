@@ -60,6 +60,7 @@ class MLPPolicy(nn.Module):
         """Takes a single observation (as a numpy array) and returns a single action (as a numpy array)."""
         # TODO: implement get_action
         action = self(ptu.from_numpy(obs)).sample()
+        # action = self(ptu.from_numpy(obs))
 
         return ptu.to_numpy(action)
 
@@ -100,7 +101,9 @@ class MLPPolicyPG(MLPPolicy):
 
         # TODO: implement the policy gradient actor update.
         if self.discrete:
-            forward = self.forward(obs).log_prob(actions) * advantages
+            print(obs.shape)
+            print(actions.shape)
+            forward = self.forward(obs).log_prob(actions[:, 0]) * advantages
             forward = forward.mean()
             loss = -forward
         else:

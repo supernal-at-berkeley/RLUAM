@@ -33,7 +33,8 @@ def sample_trajectory(
         # TODO use the most recent ob and the policy to decide what to do
         ac = policy.get_action(ob)  # HINT: query the policy's get_action function
         # TODO: use that action to take a step in the environment
-        next_ob, rew, done, _ = env.step(ac)
+        ac = np.repeat(ac, 4)
+        next_ob, rew, done = env.step(ac)
 
         # TODO rollout can end due to done, or due to max_length
         steps += 1
@@ -51,7 +52,9 @@ def sample_trajectory(
         # end the rollout if the rollout ended
         if rollout_done:
             break
-
+    # Check the shape of the first observation and reshape if necessary
+    if obs[0].shape == (1, 34):
+        obs[0] = obs[0].reshape(34)
     return {
         "observation": np.array(obs, dtype=np.float32),
         "image_obs": np.array(image_obs, dtype=np.uint8),
