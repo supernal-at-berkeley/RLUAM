@@ -97,8 +97,6 @@ class MLPPolicyPG(MLPPolicy):
         advantages = ptu.from_numpy(advantages)
 
         if self.discrete:
-            print(obs.shape)
-            print(actions.shape)
             forward = self.forward(obs).log_prob(actions[:, 0]) * advantages
             forward = forward.mean()
             loss = -forward
