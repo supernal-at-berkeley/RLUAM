@@ -58,21 +58,29 @@ class MLPPolicy(nn.Module):
     @torch.no_grad()
     def get_action(self, obs: np.ndarray) -> np.ndarray:
         """Takes a single observation (as a numpy array) and returns a single action (as a numpy array)."""
-        action = self(ptu.from_numpy(obs)).sample()
+        action = self(ptu.from_numpy(obs))
+        action = action.numpy()
+        # action = self(ptu.from_numpy(obs)).sample() #TODO: Change this to be a numpy array
         # action = self(ptu.from_numpy(obs))
+        return action
+        # return ptu.to_numpy(action) #TODO: Just return action
 
-        return ptu.to_numpy(action)
-
-    def forward(self, obs: torch.FloatTensor):
+    def forward(self, obs: torch.FloatTensor, flag=True):
         """
         This function defines the forward pass of the network.  You can return anything you want, but you should be
         able to differentiate through it. For example, you can return a torch.FloatTensor. You can also return more
         flexible objects, such as a `torch.distributions.Distribution` object. It's up to you!
         """
+        if flag == False:
+            logits = self.logits_net(obs)
+            action_distribution = distributions.Categorical(logits=logits) #TODO: Just return logit
+            # return logits
+            return action_distribution #TODO: return logits
         if self.discrete:
             logits = self.logits_net(obs)
-            action_distribution = distributions.Categorical(logits=logits)
-            return action_distribution
+            action_distribution = distributions.Categorical(logits=logits) #TODO: Just return logit
+            return logits
+            # return action_distribution #TODO: return logits
         else:
             action_distribution = torch.distributions.Normal(self.mean_net(obs), torch.exp(self.logstd))
             return action_distribution
@@ -97,7 +105,7 @@ class MLPPolicyPG(MLPPolicy):
         advantages = ptu.from_numpy(advantages)
 
         if self.discrete:
-            forward = self.forward(obs).log_prob(actions[:, 0]) * advantages
+            forward = self.forward(obs,flag=False).log_prob(torch.argmax(actions, dim=1)) * advantages
             forward = forward.mean()
             loss = -forward
         else:
