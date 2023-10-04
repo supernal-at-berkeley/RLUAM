@@ -31,7 +31,6 @@ def sample_trajectory(
             )
 
         ac = policy.get_action(ob)  # HINT: query the policy's get_action function
-        # ac = np.repeat(ac, 4) #TODO: no repeating but real actions
         ac = ac.reshape(4)
         next_ob, rew, done = env.step(ac)
 

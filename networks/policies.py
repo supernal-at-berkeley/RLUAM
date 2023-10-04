@@ -60,10 +60,7 @@ class MLPPolicy(nn.Module):
         """Takes a single observation (as a numpy array) and returns a single action (as a numpy array)."""
         action = self(ptu.from_numpy(obs))
         action = action.numpy()
-        # action = self(ptu.from_numpy(obs)).sample() #TODO: Change this to be a numpy array
-        # action = self(ptu.from_numpy(obs))
         return action
-        # return ptu.to_numpy(action) #TODO: Just return action
 
     def forward(self, obs: torch.FloatTensor, flag=True):
         """
@@ -73,14 +70,11 @@ class MLPPolicy(nn.Module):
         """
         if flag == False:
             logits = self.logits_net(obs)
-            action_distribution = distributions.Categorical(logits=logits) #TODO: Just return logit
-            # return logits
-            return action_distribution #TODO: return logits
+            action_distribution = distributions.Categorical(logits=logits)
+            return action_distribution
         if self.discrete:
             logits = self.logits_net(obs)
-            action_distribution = distributions.Categorical(logits=logits) #TODO: Just return logit
             return logits
-            # return action_distribution #TODO: return logits
         else:
             action_distribution = torch.distributions.Normal(self.mean_net(obs), torch.exp(self.logstd))
             return action_distribution
