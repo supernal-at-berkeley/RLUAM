@@ -58,8 +58,18 @@ class MLPPolicy(nn.Module):
     @torch.no_grad()
     def get_action(self, obs: np.ndarray) -> np.ndarray:
         """Takes a single observation (as a numpy array) and returns a single action (as a numpy array)."""
-        action = self(ptu.from_numpy(obs)).sample()
-        # action = self(ptu.from_numpy(obs))
+
+        if (self(ptu.from_numpy(obs)).sample()):
+            action = self(ptu.from_numpy(obs)).sample()
+            # action2 = self(ptu.from_numpy(obs)).sample()
+            # action3 = self(ptu.from_numpy(obs)).sample()
+            # action4 = self(ptu.from_numpy(obs)).sample()
+            #
+            # action = torch.cat((action1, action2))
+            # action = torch.cat((action, action3))
+            # action = torch.cat((action, action4))
+        else:
+            action = self(ptu.from_numpy(obs)).sample()
 
         return ptu.to_numpy(action)
 
@@ -71,6 +81,7 @@ class MLPPolicy(nn.Module):
         """
         if self.discrete:
             logits = self.logits_net(obs)
+            # logits = logits.view(4, 4)
             action_distribution = distributions.Categorical(logits=logits)
             return action_distribution
         else:
