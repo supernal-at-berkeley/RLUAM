@@ -2,9 +2,9 @@ import gym
 import pickle
 import numpy as np
 import random
-import pandas as pd
 from src.entities.vertiport import vertiport
 from utils.autoregressive_pax_arrival_process import autoregressive_possion_rate, pois_generate
+import pandas as pd
 
 flight_time = np.array([[0,10],[10,0]])
 initial_fleet_size = np.array([8,8])

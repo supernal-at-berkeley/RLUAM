@@ -33,7 +33,14 @@ def sample_trajectory(
 
 
         ac = policy.get_action(ob)  # HINT: query the policy's get_action function
-        next_ob, rew, done = env.step(ac)
+
+        action = np.array([int(char) for char in str(ac)])
+        if len(action) < 4:
+            action = np.concatenate([action, np.repeat(0, 4-len(action))])
+        elif len(action) > 4:
+            action = action[:4]
+
+        next_ob, rew, done = env.step(action)
 
         steps += 1
         rollout_done: bool = steps >= max_length or done
