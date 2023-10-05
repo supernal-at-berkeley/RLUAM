@@ -86,7 +86,7 @@ class Env(gym.Env):
 
         dispatch_at_vertiport_1 = random.randint(0, num_idle_vertiport_1)
         charge_at_vertiport_1 = random.randint(0, num_idle_vertiport_1-dispatch_at_vertiport_1)
-
+        # Action Specification:
         return np.array([dispatch_at_vertiport_0, charge_at_vertiport_0, dispatch_at_vertiport_1, charge_at_vertiport_1])
     
     def step(self, action):
