@@ -2,7 +2,9 @@ import gym
 from src.env import *
 from utils.logger import logger
 from agents.pg_agent import PGAgent
+import pickle
 
+import pickle
 import os
 import time
 import numpy as np
@@ -69,7 +71,7 @@ def run_training_loop(args):
 
     total_envsteps = 0
     start_time = time.time()
-    max_ep_len = args.ep_len or 1000
+    max_ep_len = args.ep_len or 1440
 
     avg_reward_list = []
     max_return_list = []
@@ -121,7 +123,7 @@ def run_training_loop(args):
     #     print("{} : {}".format(key, value))
     #     logger.log_scalar(value, key, itr)
     # print("Done logging...\n\n")
-    return itr_list, avg_reward_list, max_return_list, min_return_list, actor_losses_list
+    return itr_list, avg_reward_list, max_return_list, min_return_list, actor_losses_list, trajs
 
 
 def main():
@@ -193,14 +195,12 @@ def main():
     #     two_vertiport_system.step(action)
     #     logger(two_vertiport_system)
     reward_data = {}
-    itr, avg, max_r, min_r, actor_losses = run_training_loop(args)
+    itr, avg, max_r, min_r, actor_losses, trajs = run_training_loop(args)
     reward_data['UAM'] = (avg, max_r, min_r)
     plot_rewards(itr, reward_data, title="Reward vs Number of environment steps for UAM RL")
 
-
-
-
-
+    with open('runs/trajs.pkl', 'wb') as f:
+        pickle.dump(trajs, f)
 
 
 
