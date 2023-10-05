@@ -4,6 +4,7 @@ import copy
 from networks.policies import MLPPolicy
 import gym
 import cv2
+import torch
 from infrastructure import pytorch_util as ptu
 from typing import Dict, Tuple, List
 
@@ -30,8 +31,14 @@ def sample_trajectory(
                 cv2.resize(img, dsize=(250, 250), interpolation=cv2.INTER_CUBIC)
             )
 
-        ac = policy.get_action(ob)  # HINT: query the policy's get_action function
-        ac = np.repeat(ac, 4)
+        ac1 = policy.get_action(ob)  # HINT: query the policy's get_action function
+        ac2 = policy.get_action(ob)
+        ac3 = policy.get_action(ob)
+        ac4 = policy.get_action(ob)
+        if (ac1.shape == (1,)):
+            ac  = np.concatenate((ac1, ac2, ac3, ac4))
+        else:
+            ac = np.array([ac1, ac2, ac3, ac4])
         next_ob, rew, done = env.step(ac)
 
         steps += 1
