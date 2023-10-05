@@ -34,11 +34,12 @@ def sample_trajectory(
 
         ac = policy.get_action(ob)  # HINT: query the policy's get_action function
 
-        action = np.array([int(char) for char in str(ac)])
-        if len(action) < 4:
-            action = np.concatenate([action, np.repeat(0, 4-len(action))])
-        elif len(action) > 4:
-            action = action[:4]
+        index_4 = ac % 16
+        index_3 = (ac // 16) % 16
+        index_2 = (ac // (16 * 16)) % 16
+        index_1 = (ac // (16 * 16 * 16)) % 16
+
+        action = np.array([index_1, index_2, index_3, index_4])
 
         next_ob, rew, done = env.step(action)
 
