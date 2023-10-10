@@ -135,27 +135,32 @@ class Env(gym.Env):
         self.vertiports[0].commit_aircraft_to_charging(action[2])
         self.vertiports[1].commit_aircraft_to_charging(action[3])
 
+    def get_observation(self):
 
         lax_vertiport_idling = []
         for aircraft in self.vertiports[0].idle_aircraft:
             lax_vertiport_idling.append(aircraft.soc)
         lax_vertiport_idling = np.array(lax_vertiport_idling)
-        lax_vertiport_idling = np.concatenate([lax_vertiport_idling, np.repeat(0, self.initial_fleet_size.sum()-len(lax_vertiport_idling))])
+        lax_vertiport_idling = np.concatenate(
+            [lax_vertiport_idling, np.repeat(0, self.initial_fleet_size.sum() - len(lax_vertiport_idling))])
 
         dtla_vertiport_idling = []
         for aircraft in self.vertiports[1].idle_aircraft:
             dtla_vertiport_idling.append(aircraft.soc)
         dtla_vertiport_idling = np.array(dtla_vertiport_idling)
-        dtla_vertiport_idling = np.concatenate([dtla_vertiport_idling, np.repeat(0, self.initial_fleet_size.sum()-len(dtla_vertiport_idling))])
-
-        queue_length = self.vertiports[0].queue + self.vertiports[1].queue
-        charging_time = action[0] + action[2]
-        reward = -(self.charging_beta*charging_time+self.pax_waiting_time_beta*queue_length)
+        dtla_vertiport_idling = np.concatenate(
+            [dtla_vertiport_idling, np.repeat(0, self.initial_fleet_size.sum() - len(dtla_vertiport_idling))])
 
         # Observation is of dimension 34
         # 16 for the idle aircraft soc, 16 for the idle aircraft soc at the other vertiport, 1 for queue length resepectively
-        ob = np.concatenate([lax_vertiport_idling, dtla_vertiport_idling, np.array([self.vertiports[0].queue]), np.array([self.vertiports[1].queue])])
-        
-        return ob, reward, terminate
-          
+        ob = np.concatenate([lax_vertiport_idling, dtla_vertiport_idling, np.array([self.vertiports[0].queue]),
+                             np.array([self.vertiports[1].queue])])
 
+        return ob
+
+    def get_reward(self):
+        queue_length = self.vertiports[0].queue + self.vertiports[1].queue
+        charging_time = len(self.vertiports[0].charging_aircraft) + len(self.vertiports[1].charging_aircraft)
+        reward = -(self.charging_beta * charging_time + self.pax_waiting_time_beta * queue_length)
+
+        return reward
