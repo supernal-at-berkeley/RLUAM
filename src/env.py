@@ -11,8 +11,8 @@ initial_fleet_size = np.array([8,8])
 aircraft_initial_soc = 1
 time_step = 1
 pax_arrival_fn = 'data/' + 'full_year_schedule_0926'
-pax_waiting_time_beta = 100
-charging_beta = 50
+pax_waiting_time_beta = 10
+charging_beta = 1
 
 class Env(gym.Env):
     def __init__(self, 
@@ -100,6 +100,7 @@ class Env(gym.Env):
             Update the aircraft soc
         """
         terminate = False
+        added_cost = 0
 
         for vertiport_idx, vertiport in enumerate(self.vertiports):
             for aircraft_idx, aircraft in enumerate(vertiport.charging_aircraft):
@@ -124,13 +125,19 @@ class Env(gym.Env):
         self.vertiports[1].sort_idle_aircraft()
 
         if (action[0] > len(self.vertiports[0].idle_aircraft)) | (action[1] > len(self.vertiports[1].idle_aircraft)):
-            terminate = True
+            # terminate = True
+            added_cost = 50000
+        else:
+            added_cost = -50
 
         self.vertiports[0].dispatch_aircraft_for_flight(action[0])
         self.vertiports[1].dispatch_aircraft_for_flight(action[1])
 
         if (action[2] > len(self.vertiports[0].idle_aircraft)) | (action[3] > len(self.vertiports[1].idle_aircraft)):
-            terminate = True
+            # terminate = True
+            added_cost = 50000
+        else:
+            added_cost = -50
 
         self.vertiports[0].commit_aircraft_to_charging(action[2])
         self.vertiports[1].commit_aircraft_to_charging(action[3])
@@ -150,7 +157,7 @@ class Env(gym.Env):
 
         queue_length = self.vertiports[0].queue + self.vertiports[1].queue
         charging_time = action[0] + action[2]
-        reward = -(self.charging_beta*charging_time+self.pax_waiting_time_beta*queue_length)
+        reward = -(self.charging_beta*charging_time+self.pax_waiting_time_beta*queue_length+added_cost)
 
         # Observation is of dimension 34
         # 16 for the idle aircraft soc, 16 for the idle aircraft soc at the other vertiport, 1 for queue length resepectively

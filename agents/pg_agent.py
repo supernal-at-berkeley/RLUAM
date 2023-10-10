@@ -32,13 +32,6 @@ class PGAgent(nn.Module):
             ac_dim, ob_dim, discrete, n_layers, layer_size, learning_rate
         )
 
-        # create the critic (baseline) network, if needed
-        # if use_baseline:
-        #     self.critic = ValueCritic(
-        #         ob_dim, n_layers, layer_size, baseline_learning_rate
-        #     )
-        #     self.baseline_gradient_steps = baseline_gradient_steps
-        # else:
         self.critic = None
 
         # other agent parameters
@@ -78,8 +71,6 @@ class PGAgent(nn.Module):
             obs_final = np.append(obs_final, obs[idx], axis=0)
         # step 2: calculate advantages from Q values
         advantages: np.ndarray = self._estimate_advantage(obs_final, rewards, q_values, terminals)
-
-
 
         # step 3: use all datapoints (s_t, a_t, adv_t) to update the PG actor/policy
         info: dict = self.actor.update(obs_final,actions,advantages)

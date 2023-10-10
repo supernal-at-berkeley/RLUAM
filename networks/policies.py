@@ -27,7 +27,7 @@ class MLPPolicy(nn.Module):
         learning_rate: float,
     ):
         super().__init__()
-        self.num_bins = 16
+        self.num_bins = 8
         if discrete:
             self.mean_net = ptu.build_mlp(
                 input_size=ob_dim,
@@ -83,23 +83,25 @@ class MLPPolicy(nn.Module):
             action_distribution = torch.distributions.MultivariateNormal(mean, covariance_matrix)
 
             # Discretize each dimension of the distribution
-            bin_edges = [torch.linspace(0, 16, self.num_bins + 1) for _ in range(4)]  # Adjust the range as needed
+            bin_edges = [torch.linspace(0, 8, self.num_bins + 1) for _ in range(4)]  # Adjust the range as needed
             bin_probs = torch.zeros([self.num_bins] * 4)
 
             # Sample from the multivariate normal distribution
-            samples = action_distribution.sample([1000])  # Adjust the number of samples as needed
+            samples = action_distribution.sample([10])  # Adjust the number of samples as needed
 
             # Count samples in each bin for each dimension
-            for dim in range(4):
-                for i in range(self.num_bins):
-                    lower_bound = bin_edges[dim][i]
-                    upper_bound = bin_edges[dim][i + 1]
-                    bin_probs[i] = ((samples[:, dim] > lower_bound) & (
-                                samples[:, dim] <= upper_bound)).sum().item() / samples.size(0)
+            # for dim in range(4):
+            #     for i in range(self.num_bins):
+            #         lower_bound = bin_edges[dim][i]
+            #         upper_bound = bin_edges[dim][i + 1]
+            #         bin_probs[i] = ((samples[:, dim] > lower_bound) & (
+            #                     samples[:, dim] <= upper_bound)).sum().item() / samples.size(0)
+            #
+            # # Create a categorical distribution with the computed probabilities
+            # discrete_distribution = distributions.Categorical(bin_probs.view(-1))
+            # return discrete_distribution
 
-            # Create a categorical distribution with the computed probabilities
-            discrete_distribution = distributions.Categorical(bin_probs.view(-1))
-            return discrete_distribution
+            return action_distribution
 
         else:
             action_distribution = torch.distributions.Normal(self.mean_net(obs), torch.exp(self.logstd))
@@ -125,10 +127,9 @@ class MLPPolicyPG(MLPPolicy):
         advantages = ptu.from_numpy(advantages)
 
         if self.discrete:
-
             forward = self.forward(obs).log_prob(actions) * advantages
             forward = forward.mean()
-            loss = -forward.requires_grad_()
+            loss = -forward
         else:
             forward = self.forward(obs).log_prob(actions).sum(dim=-1) * advantages
             forward = forward.mean()
