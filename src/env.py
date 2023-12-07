@@ -2,19 +2,19 @@ import gym
 import pickle
 import numpy as np
 import random
-import pandas as pd
+
 import sys
 sys.path.append('/Users/jiangxuan/Desktop/[27] CS 285 Project/RLUAM')
+from src.entities.vertiport import vertiport
+from utils.autoregressive_pax_arrival_process import autoregressive_possion_rate, pois_generate
+import pandas as pd
+import gymnasium as gym
+import numpy as np
+from gymnasium import spaces
 import os
 base_dir = "/Users/jiangxuan/Desktop/[27] CS 285 Project/RLUAM"
 data_dir = os.path.join(base_dir, "data")
 
-
-from src.entities.vertiport import vertiport
-from utils.autoregressive_pax_arrival_process import autoregressive_possion_rate, pois_generate
-import gymnasium as gym
-import numpy as np
-from gymnasium import spaces
 
 flight_time = np.array([[0,10],[10,0]])
 initial_fleet_size = np.array([8,8])
@@ -23,8 +23,10 @@ time_step = 1
 file_name = "full_year_schedule_0926"
 
 pax_arrival_fn = os.path.join(data_dir, file_name)
-pax_waiting_time_beta = 100
-charging_beta = 50
+
+pax_waiting_time_beta = 10
+charging_beta = 1
+
 
 class Env(gym.Env):
     def __init__(self, 
@@ -36,8 +38,7 @@ class Env(gym.Env):
                  pax_waiting_time_beta=pax_waiting_time_beta,
                  charging_beta=charging_beta):
         super().__init__()
-        # what should I do now
-        
+
         self.aircraft_initial_soc = aircraft_initial_soc
         self.initial_fleet_size = initial_fleet_size
         self.flight_time = flight_time
@@ -49,8 +50,15 @@ class Env(gym.Env):
         self.charging_beta = charging_beta
         self.ob_dim = 34
         self.ac_dim = 4
-        self.action_space = spaces.Discrete(4)
-        self.observation_space = spaces.Discrete(34)
+
+
+        # Define the action space as a tuple of two discrete spaces
+        self.action_space = gym.spaces.MultiDiscrete([14, 14, 14, 14])
+        # self.observation_space = spaces.MultiBinary(34)
+        self.observation_space = spaces.Box(low=0, high=1,
+                                            shape=(34,), dtype=np.int32)
+
+
         self.event_time_counter = 0
 
 
@@ -83,13 +91,15 @@ class Env(gym.Env):
         num_pax_dtla_lax = len(self.dtla_lax_arrival[(self.dtla_lax_arrival <= t) & (self.dtla_lax_arrival > t-1)])
         return num_pax_lax_dtla, num_pax_dtla_lax
 
-    def reset(self):
+    def reset(self, seed=None, options=None):
         self.vertiports = [vertiport(self.aircraft_initial_soc, self.initial_fleet_size[0], self.flight_time, 0, self.time_step),
                            vertiport(self.aircraft_initial_soc, self.initial_fleet_size[1], self.flight_time, 1, self.time_step)]
         self.lax_dtla_arrival, self.lax_dtla_arrival = self.__pax_arrival_realization__(self.lax_dtla_rate, self.dtla_lax_rate)
         self.event_time_counter = 0
-        info = ...
-        return np.array([1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0]), info
+
+        info = {}
+        return list([1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0]), info
+
 
 
     def compute_action(self):
@@ -115,6 +125,7 @@ class Env(gym.Env):
             Update the aircraft soc
         """
         terminate = False
+        added_cost = 0
 
         for vertiport_idx, vertiport in enumerate(self.vertiports):
             for aircraft_idx, aircraft in enumerate(vertiport.charging_aircraft):
@@ -139,13 +150,19 @@ class Env(gym.Env):
         self.vertiports[1].sort_idle_aircraft()
 
         if (action[0] > len(self.vertiports[0].idle_aircraft)) | (action[1] > len(self.vertiports[1].idle_aircraft)):
-            terminate = True
+            # terminate = True
+            added_cost = 50000
+        else:
+            added_cost = -50
 
         self.vertiports[0].dispatch_aircraft_for_flight(action[0])
         self.vertiports[1].dispatch_aircraft_for_flight(action[1])
 
         if (action[2] > len(self.vertiports[0].idle_aircraft)) | (action[3] > len(self.vertiports[1].idle_aircraft)):
-            terminate = True
+            # terminate = True
+            added_cost = 50000
+        else:
+            added_cost = -50
 
         self.vertiports[0].commit_aircraft_to_charging(action[2])
         self.vertiports[1].commit_aircraft_to_charging(action[3])
@@ -165,13 +182,17 @@ class Env(gym.Env):
 
         queue_length = self.vertiports[0].queue + self.vertiports[1].queue
         charging_time = action[0] + action[2]
-        reward = -(self.charging_beta*charging_time+self.pax_waiting_time_beta*queue_length)
+        reward = -(self.charging_beta*charging_time+self.pax_waiting_time_beta*queue_length+added_cost)
 
         # Observation is of dimension 34
         # 16 for the idle aircraft soc, 16 for the idle aircraft soc at the other vertiport, 1 for queue length resepectively
         ob = np.concatenate([lax_vertiport_idling, dtla_vertiport_idling, np.array([self.vertiports[0].queue]), np.array([self.vertiports[1].queue])])
-        info = ...
-        truncated = ...
-        return ob, reward, terminate, truncated, info
-          
+
+        truncted = False
+        info = {}
+        return ob, reward, terminate, truncted, info
+     
+    # def close(self):
+    #         ...
+
 

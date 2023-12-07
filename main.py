@@ -171,8 +171,8 @@ def main():
 
     parser.add_argument("--discount", type=float, default=1.0)
     parser.add_argument("--learning_rate", "-lr", type=float, default=5e-3)
-    parser.add_argument("--n_layers", "-l", type=int, default=2)
-    parser.add_argument("--layer_size", "-s", type=int, default=64)
+    parser.add_argument("--n_layers", "-l", type=int, default=8)
+    parser.add_argument("--layer_size", "-s", type=int, default=128)
 
     parser.add_argument(
         "--ep_len", type=int

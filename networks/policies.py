@@ -27,7 +27,7 @@ class MLPPolicy(nn.Module):
         learning_rate: float,
     ):
         super().__init__()
-
+        self.num_bins = 8
         if discrete:
             self.mean_net = ptu.build_mlp(
                 input_size=ob_dim,
@@ -61,8 +61,13 @@ class MLPPolicy(nn.Module):
     @torch.no_grad()
     def get_action(self, obs: np.ndarray) -> np.ndarray:
         """Takes a single observation (as a numpy array) and returns a single action (as a numpy array)."""
-        action = self(ptu.from_numpy(obs)).sample()
-        return ptu.to_numpy(action)
+        action = self(ptu.from_numpy(obs)).sample().numpy()
+        # action = np.array([int(char) for char in str(action)])
+        # if len(action) < 4:
+        #     action = np.concatenate([action, np.repeat(0, 4-len(action))])
+        # elif len(action) > 4:
+        #     action = action[:4]
+        return action
 
     def forward(self, obs: torch.FloatTensor):
         """
@@ -72,10 +77,32 @@ class MLPPolicy(nn.Module):
         """
         if self.discrete:
             mean = self.mean_net(obs)
+            mean = torch.relu(mean)
             # Ensure the covariance matrix is positive definite by creating a diagonal matrix
             covariance_matrix = torch.diag(torch.exp(self.logstd))
             action_distribution = torch.distributions.MultivariateNormal(mean, covariance_matrix)
+
+            # Discretize each dimension of the distribution
+            bin_edges = [torch.linspace(0, 8, self.num_bins + 1) for _ in range(4)]  # Adjust the range as needed
+            bin_probs = torch.zeros([self.num_bins] * 4)
+
+            # Sample from the multivariate normal distribution
+            samples = action_distribution.sample([10])  # Adjust the number of samples as needed
+
+            # Count samples in each bin for each dimension
+            # for dim in range(4):
+            #     for i in range(self.num_bins):
+            #         lower_bound = bin_edges[dim][i]
+            #         upper_bound = bin_edges[dim][i + 1]
+            #         bin_probs[i] = ((samples[:, dim] > lower_bound) & (
+            #                     samples[:, dim] <= upper_bound)).sum().item() / samples.size(0)
+            #
+            # # Create a categorical distribution with the computed probabilities
+            # discrete_distribution = distributions.Categorical(bin_probs.view(-1))
+            # return discrete_distribution
+
             return action_distribution
+
         else:
             action_distribution = torch.distributions.Normal(self.mean_net(obs), torch.exp(self.logstd))
             return action_distribution
