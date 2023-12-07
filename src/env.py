@@ -2,6 +2,7 @@ import gym
 import pickle
 import numpy as np
 import random
+
 import sys
 sys.path.append('/Users/jiangxuan/Desktop/[27] CS 285 Project/RLUAM')
 from src.entities.vertiport import vertiport
@@ -14,6 +15,7 @@ import os
 base_dir = "/Users/jiangxuan/Desktop/[27] CS 285 Project/RLUAM"
 data_dir = os.path.join(base_dir, "data")
 
+
 flight_time = np.array([[0,10],[10,0]])
 initial_fleet_size = np.array([8,8])
 aircraft_initial_soc = 1
@@ -21,8 +23,10 @@ time_step = 1
 file_name = "full_year_schedule_0926"
 
 pax_arrival_fn = os.path.join(data_dir, file_name)
+
 pax_waiting_time_beta = 10
 charging_beta = 1
+
 
 class Env(gym.Env):
     def __init__(self, 
@@ -34,6 +38,7 @@ class Env(gym.Env):
                  pax_waiting_time_beta=pax_waiting_time_beta,
                  charging_beta=charging_beta):
         super().__init__()
+
         self.aircraft_initial_soc = aircraft_initial_soc
         self.initial_fleet_size = initial_fleet_size
         self.flight_time = flight_time
@@ -46,11 +51,13 @@ class Env(gym.Env):
         self.ob_dim = 34
         self.ac_dim = 4
 
+
         # Define the action space as a tuple of two discrete spaces
         self.action_space = gym.spaces.MultiDiscrete([14, 14, 14, 14])
         # self.observation_space = spaces.MultiBinary(34)
         self.observation_space = spaces.Box(low=0, high=1,
                                             shape=(34,), dtype=np.int32)
+
 
         self.event_time_counter = 0
 
@@ -89,8 +96,10 @@ class Env(gym.Env):
                            vertiport(self.aircraft_initial_soc, self.initial_fleet_size[1], self.flight_time, 1, self.time_step)]
         self.lax_dtla_arrival, self.lax_dtla_arrival = self.__pax_arrival_realization__(self.lax_dtla_rate, self.dtla_lax_rate)
         self.event_time_counter = 0
+
         info = {}
         return list([1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0]), info
+
 
 
     def compute_action(self):
@@ -180,6 +189,7 @@ class Env(gym.Env):
         # Observation is of dimension 34
         # 16 for the idle aircraft soc, 16 for the idle aircraft soc at the other vertiport, 1 for queue length resepectively
         ob = np.concatenate([lax_vertiport_idling, dtla_vertiport_idling, np.array([self.vertiports[0].queue]), np.array([self.vertiports[1].queue])])
+
         truncted = False
         info = {}
         if (self.event_time_counter == 288):
@@ -190,4 +200,5 @@ class Env(gym.Env):
      
     # def close(self):
     #         ...
+
 
