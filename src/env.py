@@ -142,6 +142,7 @@ class Env(gym.Env):
 
         if (action[0] > len(self.vertiports[0].idle_aircraft)) | (action[1] > len(self.vertiports[1].idle_aircraft)):
             # terminate = True
+            # print(self.event_time_counter)
             added_cost = 50000
         else:
             added_cost = -50
@@ -151,6 +152,7 @@ class Env(gym.Env):
 
         if (action[2] > len(self.vertiports[0].idle_aircraft)) | (action[3] > len(self.vertiports[1].idle_aircraft)):
             # terminate = True
+            # print(self.event_time_counter)
             added_cost = 50000
         else:
             added_cost = -50
@@ -180,6 +182,10 @@ class Env(gym.Env):
         ob = np.concatenate([lax_vertiport_idling, dtla_vertiport_idling, np.array([self.vertiports[0].queue]), np.array([self.vertiports[1].queue])])
         truncted = False
         info = {}
+        if (self.event_time_counter == 288):
+            # print("done")
+            truncted = True
+            terminate = True
         return ob, reward, terminate, truncted, info
      
     # def close(self):
