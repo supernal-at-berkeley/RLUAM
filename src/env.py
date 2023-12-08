@@ -157,7 +157,11 @@ class Env(gym.Env):
         if (action[0] > len(self.vertiports[0].idle_aircraft)) | (action[1] > len(self.vertiports[1].idle_aircraft)):
             # terminate = True
             # print(self.event_time_counter)
-            added_cost = 50000
+            if (action[0] > len(self.vertiports[0].idle_aircraft)):  
+                action[0] = len(self.vertiports[0].idle_aircraft)
+            else:
+                action[1] = len(self.vertiports[1].idle_aircraft)
+            added_cost = 100
         else:
             added_cost = -50
 
@@ -167,7 +171,11 @@ class Env(gym.Env):
         if (action[2] > len(self.vertiports[0].idle_aircraft)) | (action[3] > len(self.vertiports[1].idle_aircraft)):
             # terminate = True
             # print(self.event_time_counter)
-            added_cost = 50000
+            if (action[2] > len(self.vertiports[0].idle_aircraft)):
+                action[2] = len(self.vertiports[0].idle_aircraft)
+            else:
+                action[3] = len(self.vertiports[1].idle_aircraft)
+            added_cost = 100
         else:
             added_cost = -50
 
