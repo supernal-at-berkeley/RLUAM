@@ -33,7 +33,7 @@ model = RecurrentPPO("MlpLstmPolicy",
 
 TIMESTEPS = 10000
 for i in range(1, 100000000000000):
-    model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name="ppo_lstm")
+    model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name="ppo_lstm_benefit_bigger_right")
     #model.save(model_dir)
     model.save(f"{models_dir}/ppo_recurrent")
 # env.close()
