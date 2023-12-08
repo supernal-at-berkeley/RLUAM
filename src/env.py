@@ -2,9 +2,14 @@ import gym
 import pickle
 import numpy as np
 import random
+from stable_baselines3 import PPO, DQN
+from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.evaluation import evaluate_policy
 
+from sb3_contrib import RecurrentPPO
 import sys
-sys.path.append('/Users/jiangxuan/Desktop/[27] CS 285 Project/RLUAM')
+sys.path.append('/Users/jiangxuan/Desktop/uam_project/RLUAM')
 from src.entities.vertiport import vertiport
 from utils.autoregressive_pax_arrival_process import autoregressive_possion_rate, pois_generate
 import pandas as pd
@@ -12,7 +17,7 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 import os
-base_dir = "/Users/jiangxuan/Desktop/[27] CS 285 Project/RLUAM"
+base_dir = "/Users/jiangxuan/Desktop/uam_project/RLUAM"
 data_dir = os.path.join(base_dir, "data")
 
 
